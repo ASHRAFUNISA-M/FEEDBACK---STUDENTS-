@@ -14,7 +14,9 @@ import {
 const feedbackForm = document.querySelector("#feedbackForm");
 const feedbackList = document.querySelector("#feedbackList");
 const statusMessage = document.querySelector("#statusMessage");
+const downloadButton = document.querySelector("#downloadFeedback");
 const STORAGE_KEY = "campusVoiceFeedback";
+let currentFeedback = [];
 
 const setStatus = (text, type = "") => {
   statusMessage.textContent = text;
@@ -96,6 +98,22 @@ const escapeHtml = (value = "") =>
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+const escapeXml = (value) =>
+  Array.from(String(value ?? ""))
+    .filter((character) => {
+      const codePoint = character.codePointAt(0);
+      return codePoint === 0x9 || codePoint === 0xa || codePoint === 0xd
+        || (codePoint >= 0x20 && codePoint <= 0xd7ff)
+        || (codePoint >= 0xe000 && codePoint <= 0xfffd)
+        || (codePoint >= 0x10000 && codePoint <= 0x10ffff);
+    })
+    .join("")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+
 const renderFeedback = (documents) => {
   const entries = documents.map((document) => {
     if (typeof document?.data === "function") {
@@ -104,6 +122,9 @@ const renderFeedback = (documents) => {
 
     return document;
   });
+
+  currentFeedback = entries;
+  downloadButton.disabled = entries.length === 0;
 
   if (!entries.length) {
     feedbackList.innerHTML = '<div class="empty-state">No feedback submitted yet. Be the first to share your experience.</div>';
@@ -129,6 +150,41 @@ const renderFeedback = (documents) => {
     })
     .join("");
 };
+
+downloadButton.addEventListener("click", () => {
+  const rows = [
+    ["Student Name", "Feedback Message", "Rating", "Submitted On"],
+    ...currentFeedback.map(({ studentName, message, rating, createdAt }) => [
+      studentName || "Anonymous Student",
+      message || "No message provided.",
+      rating || 0,
+      formatDate(createdAt),
+    ]),
+  ];
+  const worksheetRows = rows
+    .map((row) => `<Row>${row
+      .map((value) => `<Cell><Data ss:Type="String">${escapeXml(value)}</Data></Cell>`)
+      .join("")}</Row>`)
+    .join("");
+  const workbook = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="Feedback">
+    <Table>${worksheetRows}</Table>
+  </Worksheet>
+</Workbook>`;
+  const file = new Blob([workbook], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const url = URL.createObjectURL(file);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "student-feedback.xls";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
 
 if (!isFirebaseConfigValid(window.firebaseConfig)) {
   console.warn("Firebase configuration is not set. Using local preview mode until valid project settings are added.");

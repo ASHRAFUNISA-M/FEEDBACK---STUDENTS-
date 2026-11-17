@@ -7,6 +7,7 @@ A simple cloud-style feedback app for students to submit reviews and ratings.
 - Feedback message form
 - Rating selection from 1 to 5
 - Recent feedback list
+- Download feedback as an Excel-readable `.xls` file
 - Firebase-ready setup for cloud storage
 - Local preview mode for demo testing
 
