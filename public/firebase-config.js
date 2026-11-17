@@ -1,11 +1,8 @@
 window.firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBKK4YHBYc86DsjE9i8zttbgRuC2f9Ftpk",
+  authDomain: "feedback-b42d3.firebaseapp.com",
+  projectId: "feedback-b42d3",
+  storageBucket: "feedback-b42d3.firebasestorage.app",
+  messagingSenderId: "547246152923",
+  appId: "1:547246152923:web:726ccea6b6388154cdc0fe"
 };
-
-// Replace the placeholder values above with the config from your existing Firebase project.
-// You can find these values in Firebase Console > Project Settings > General > Your apps > Web app.
